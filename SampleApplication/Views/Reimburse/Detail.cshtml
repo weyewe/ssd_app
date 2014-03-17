@@ -1,0 +1,110 @@
+﻿@{
+    ViewBag.Title = "Detail";
+}
+
+<script type="text/javascript" src="@Url.Content("~/Content/app_js/tools.js")"></script>
+<script type="text/javascript" src="@Url.Content("~/Content/app_js/reimburse_detail.js")"></script>
+
+<div id="container_reimburse" style="margin: 10px;">
+    <div id="reimbursedetail" class="easyui-panel" style="text-align: left;"
+            data-options="modal:true" title="@ViewBag.Title">
+
+        <div id="reimburse_form_toolbar" class="form_toolbar">
+            <a id="reimburse_form_btn_save" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-save'">SAVE</a>
+            <a id="reimburse_form_btn_cancel" href="@Url.Action("Index", new { type = "seaexport" })" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-back'">Back</a>
+        </div>
+
+        <div id="reimbursedetail_content" style="overflow: auto;">
+            <form id="frmseaexport">
+                <div style="display: inline-block; padding: 5px 10px" id="shipmentorder_content">
+                    <div class="easyui-panel" style="width: auto !important; border: none !important;">
+                        <table>
+                            <tr>
+                                <td>Description
+                                </td>
+                                <td>
+                                    <textarea id="txtDescription" rows="4" cols="45"></textarea>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td colspan="4">
+                                    <fieldset class="ui-widget-content ui-corner-all">
+                                        <legend>Reimburse Detail</legend>
+                                        <div id="reimburse_detail_toolbar" class="grid_toolbar">
+                                            <div style="float: left">
+                                                <a id="reimbursedetail_btn_reject" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-reload'">Reject</a>
+                                                <a id="reimbursedetail_btn_unreject" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-reload'">UnReject</a>
+                                            </div>
+                                        </div>
+                                        <div style="clear: both"></div>
+                                        <div style="margin: 7px 0px !important;">
+                                            <table id="table_reimburse_detail" class="scroll" cellpadding="0" cellspacing="0"></table>
+                                        </div>
+                                        <input type="button" id="btn_add_reimburse_detail" value="Add" class="btnSubmit" />
+                                        <input type="button" id="btn_edit_reimburse_detail" value="Edit" class="btnSubmit" />
+                                        <input type="button" id="btn_delete_reimburse_detail" value="Delete" class="btnSubmit" />
+                                    </fieldset>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="4">
+                                    <fieldset class="ui-widget-content ui-corner-all" style="width: 100px; float: left; margin-right: 5px;">
+                                        <legend>Actual Paid</legend>
+                                        <input id="txtActualPaid" style="text-align: right" class="textright easyui-numberbox" size="15" data-options="precision:2,groupSeparator:','" type="text" disabled="disabled" />
+                                    </fieldset>
+                                    <fieldset class="ui-widget-content ui-corner-all" style="width: 100px; float: left; margin-right: 5px;">
+                                        <legend>Total</legend>
+                                        <input id="txtTotal" style="text-align: right" class="textright easyui-numberbox" size="15" data-options="precision:2,groupSeparator:','" type="text" disabled="disabled" />
+                                    </fieldset>
+                                </td>
+                        </table>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+
+        <!-- Dialog Reimburse Detail -->
+        <div id="lookup_div_reimburse_detail" class="easyui-dialog" title="Reimburse Detail" style="padding: 0px 5px; height: 250px; width: 600px;"
+            data-options="iconCls:'icon-tip',modal:true">
+            <div id="lookup_toolbar_non_agent" class="grid_toolbar">
+                <a id="lookup_btn_add_reimburse_detail" href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-save'">Save</a>
+                <a id="lookup_btn_cancel_reimburse_detail" href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-remove'">Close Window</a>
+            </div>
+
+            <table id="lookup_table_reimburse_detail" border="0" class="dummyClass ui-jqgrid-htable" cellpadding="0" cellspacing="0" width="100%">
+                <tbody>
+                    <tr>
+                        <td valign="top">Description</td>
+                        <td colspan="3">
+                            <textarea id="txtDescReimburseDetail" rows="5" cols="57"></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="white-space: nowrap">Amount</td>
+                        <td colspan="3">
+                            <input id="txtAmountReimburseDetail" type="text" size="10" style="text-align: right" class="textright easyui-numberbox" data-options="precision:2,groupSeparator:','" value="0" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td valign="top">Expense Date</td>
+                        <td colspan="3">
+                            <input id="txtExpenseDateReimburseDetail" type="text" class="easyui-datebox" size="10"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- END Dialog Reimburse Detail -->
+
+    </div>
+</div>
+
