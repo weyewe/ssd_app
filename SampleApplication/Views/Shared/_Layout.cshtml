@@ -6,11 +6,54 @@
     <title>@ViewBag.Title</title>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
-</head>
-<body>
-    @RenderBody()
 
-    @Scripts.Render("~/bundles/jquery")
+    <script type="text/javascript">
+        var base_url = '@Url.Content("~//")';
+    </script>
+
+    <script type="text/javascript" src="@Url.Content("~/scripts/jquery-1.8.0.min.js")"></script>
+    <script type="text/javascript" src="@Url.Content("~/scripts/jquery-ui-1.8.2.custom.min.js")"></script>
+    <script type='text/javascript' src="@Url.Content("~/scripts/jquery.hoverIntent.minified.js")"></script>
+    <script type="text/javascript" src="@Url.Content("~/scripts/locale/i18n/grid.locale-en.js")"></script>
+    <script type="text/javascript" src="@Url.Content("~/scripts/jquery.jqGrid-4.4.5.min.js")"></script>
+    <script type="text/javascript" src="@Url.Content("~/scripts/jquery.easyui.min.js")"></script>
+
     @RenderSection("scripts", required: false)
-</body>
+
+    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Content/themes/easyui/default/easyui.css")">
+    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Content/themes/easyui/icon.css")">
+
+    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Content/redmond/jquery-ui-1.8.2.custom.css")" media="screen"/>
+    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Content/ui.jqgrid.css")" media="screen"/>
+    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Content/easyui/default/easyui.css")">
+    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Content/easyui/icon.css")">
+</head>
+<body class="easyui-layout">
+        <div id="loading-panel" style="display: none">
+            <div id="loading-overlay">
+            </div>
+            <div id="loading">
+                <span>Loading... </span>
+            </div>
+        </div>
+        <div data-options="region:'north',border:false,draggable:false" style="height: 35px; padding: 10px; background: #727272 !important;">
+
+            @if (Request.IsAuthenticated)
+            {
+                <div id="user-greeting">
+                    Welcome <strong>@SampleApplication.Models.AccountModel.GetUserName() -- @SampleApplication.Models.AccountModel.GetUserTypeId()</strong> &nbsp;|&nbsp; <a href="@Url.Action("Logout", "Account")">Logout
+                    </a>
+                </div>
+            }
+        </div>
+        <div data-options="region:'south',border:false" style="height: 10px; background: #E7EBF2 !important;">
+            &nbsp;
+        </div>
+        <div data-options="region:'center',border:false" style="margin-right: 5px;">
+
+            <div style="margin: 10px;">
+                @RenderBody()
+            </div>
+        </div>
+    </body> 
 </html>
