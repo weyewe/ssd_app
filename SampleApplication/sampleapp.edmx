@@ -132,12 +132,12 @@
           </Key>
           <Property Type="Int32" Name="Id" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Type="Int32" Name="ReimburseId" />
+          <Property Type="String" Name="Description" MaxLength="500" FixedLength="false" Unicode="false" />
           <Property Type="Decimal" Name="Amount" Precision="18" Scale="2" />
           <Property Type="Boolean" Name="IsRejected" />
           <Property Type="DateTime" Name="ExpenseDate" Precision="3" />
           <Property Type="DateTime" Name="CreatedDate" Precision="3" />
           <NavigationProperty Name="Reimburse" Relationship="SampleApplicationModel.FK_ReimburseDetail_ReimburseDetail" FromRole="ReimburseDetail" ToRole="Reimburse" />
-          <Property Type="String" Name="Description" MaxLength="500" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="User">
           <Key>
@@ -210,11 +210,11 @@
           <EntitySetMapping Name="ReimburseDetails">
             <EntityTypeMapping TypeName="SampleApplicationModel.ReimburseDetail">
               <MappingFragment StoreEntitySet="ReimburseDetail">
-                <ScalarProperty Name="Description" ColumnName="Description" />
                 <ScalarProperty Name="CreatedDate" ColumnName="CreatedDate" />
                 <ScalarProperty Name="ExpenseDate" ColumnName="ExpenseDate" />
                 <ScalarProperty Name="IsRejected" ColumnName="IsRejected" />
                 <ScalarProperty Name="Amount" ColumnName="Amount" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
                 <ScalarProperty Name="ReimburseId" ColumnName="ReimburseId" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
               </MappingFragment>

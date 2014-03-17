@@ -5,10 +5,10 @@
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
       <Diagram DiagramId="66f6251575074969aa11147b575be20d" Name="Diagram1">
-        <EntityTypeShape EntityType="SampleApplicationModel.Reimburse" Width="1.5" PointX="7.7901078200853" PointY="4.045459048843691" />
-        <EntityTypeShape EntityType="SampleApplicationModel.ReimburseDetail" Width="1.5" PointX="1.8566565410497862" PointY="15.314040712692794" />
-        <EntityTypeShape EntityType="SampleApplicationModel.User" Width="1.5" PointX="4.2736524233006188" PointY="23.745892237753559" />
-        <EntityTypeShape EntityType="SampleApplicationModel.UserType" Width="1.5" PointX="1.4622987645968324" PointY="4.2185833026741557" />
+        <EntityTypeShape EntityType="SampleApplicationModel.Reimburse" Width="1.5" PointX="10.482510007211245" PointY="19.174781361210524" />
+        <EntityTypeShape EntityType="SampleApplicationModel.ReimburseDetail" Width="1.5" PointX="5.1719103032592262" PointY="11.973569488140553" />
+        <EntityTypeShape EntityType="SampleApplicationModel.User" Width="1.5" PointX="7.813974428835313" PointY="25.745101478763438" />
+        <EntityTypeShape EntityType="SampleApplicationModel.UserType" Width="1.5" PointX="5.98445868584535" PointY="19.34540311402893" />
         <AssociationConnector Association="SampleApplicationModel.FK_ReimburseDetail_ReimburseDetail" />
         <AssociationConnector Association="SampleApplicationModel.FK_Users_UserType" />
       </Diagram>

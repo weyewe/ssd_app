@@ -16,11 +16,11 @@ namespace SampleApplication
     {
         public int Id { get; set; }
         public Nullable<int> ReimburseId { get; set; }
+        public string Description { get; set; }
         public Nullable<decimal> Amount { get; set; }
         public Nullable<bool> IsRejected { get; set; }
         public Nullable<System.DateTime> ExpenseDate { get; set; }
         public Nullable<System.DateTime> CreatedDate { get; set; }
-        public string Description { get; set; }
     
         public virtual Reimburse Reimburse { get; set; }
     }
