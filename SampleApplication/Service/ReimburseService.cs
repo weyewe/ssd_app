@@ -119,7 +119,7 @@ namespace SampleApplication.Service
                 newReimburse.CreatedDate = DateTime.Today;
 
                 newReimburse = _reimburseRepo.InsertReimburse(newReimburse);
-                newReimburse.Id = newReimburse.Id;
+                reimburse.Id = newReimburse.Id;
 
                 if (reimburse.ListDetail != null)
                 {

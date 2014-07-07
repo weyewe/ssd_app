@@ -72,6 +72,8 @@ namespace SampleApplication.Controllers
                             ck.Path = FormsAuthentication.FormsCookiePath;
                             Response.Cookies.Add(ck);
 
+                            LOG.Debug("Login Success, Username: "+ user.UserName);
+
                             // Redirect to requested URL, or homepage if no previous page requested
                             string returnUrl = Request.QueryString["ReturnUrl"];
                             if (!String.IsNullOrEmpty(returnUrl))
