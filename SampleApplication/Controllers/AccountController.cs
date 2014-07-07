@@ -22,6 +22,8 @@ namespace SampleApplication.Controllers
 
         public ActionResult Login()
         {
+            LOG.Debug("LOGINNNNNNNNNNNNNNNNNNNNNN");
+
             return View();
         }
 
