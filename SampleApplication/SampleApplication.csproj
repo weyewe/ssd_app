@@ -43,6 +43,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\References\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="LogentriesCore">
+      <HintPath>..\packages\References\LogentriesCore.dll</HintPath>
+    </Reference>
+    <Reference Include="LogentriesLog4net">
+      <HintPath>..\packages\References\LogentriesLog4net.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
