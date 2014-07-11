@@ -44,5 +44,13 @@ namespace SampleApplication.Models
             public bool IsRejected { get; set; }
             public DateTime? ExpenseDate { get; set; }
         }
+
+
+        public class Print
+        {
+            public int Id { get; set; }
+            public string Description { get; set; }
+            public decimal Total { get; set; }
+        }
     }
 }

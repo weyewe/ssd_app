@@ -5,6 +5,8 @@ using System.Web;
 using System.Web.Mvc;
 using SampleApplication.Models;
 using SampleApplication.Service;
+using CrystalDecisions.CrystalReports.Engine;
+using CrystalDecisions.Shared;
 
 namespace SampleApplication.Controllers
 {
@@ -107,7 +109,7 @@ namespace SampleApplication.Controllers
             bool isValid = true;
             object objResult = null;
             try
-            {                
+            {
                 ResponseModel respModel = _reimburseService.InsertReimburse(model);
                 isValid = respModel.isValid;
                 message = respModel.message;
@@ -121,7 +123,7 @@ namespace SampleApplication.Controllers
                         objResult
                     });
                 }
-                
+
                 LOG.Info("InsertReimburse Success");
             }
             catch (Exception ex)
@@ -390,7 +392,7 @@ namespace SampleApplication.Controllers
                     });
                 }
 
-                LOG.Info("InsertReimburseDetail Success");                
+                LOG.Info("InsertReimburseDetail Success");
             }
             catch (Exception ex)
             {
@@ -513,5 +515,50 @@ namespace SampleApplication.Controllers
             return View();
         }
 
+
+        public ActionResult Print()
+        {
+            ReportDocument rd = new ReportDocument();
+            try
+            {
+                var listData = (from x in _reimburseService.GetReimburseList("", "", "")
+                                select new ReimburseModel.Print
+                                    {
+                                        Description = x.Description,
+                                        Total = x.Total
+                                    }).ToList();
+                foreach (var item in listData)
+                {
+                    LOG.Debug(item.Description + "===" + item.Total);
+                }
+
+                if (listData != null)
+                {
+                    string strRptPath = "";
+                    strRptPath = Server.MapPath("~/Report/Reimburse.rpt");
+
+                    LOG.Debug(strRptPath);
+
+                    //Loading Report
+                    rd.Load(strRptPath);
+
+                    // Setting report data source
+                    rd.SetDataSource(listData);
+
+                    var stream = rd.ExportToStream(CrystalDecisions.Shared.ExportFormatType.PortableDocFormat);
+                    return File(stream, "application/pdf");
+                }
+            }
+            catch (Exception ex)
+            {
+                LOG.Error("Print, ", ex);
+            }
+            finally
+            {
+                if (rd != null)
+                    rd.Dispose();
+            }
+            return Content("Invalid Data..");
+        }
     }
 }
