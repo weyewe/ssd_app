@@ -18,6 +18,7 @@ namespace SampleApplication.Models
         public DateTime? ConfirmedDate { get; set; }
         public DateTime? ClearanceDate { get; set; }
         public List<Detail> ListDetail { get; set; }
+        public Dictionary<string, string> Errors { get; set; }
 
         public class List
         {
@@ -43,6 +44,7 @@ namespace SampleApplication.Models
             public decimal Amount { get; set; }
             public bool IsRejected { get; set; }
             public DateTime? ExpenseDate { get; set; }
+            public Dictionary<string, string> Errors { get; set; }
         }
 
 

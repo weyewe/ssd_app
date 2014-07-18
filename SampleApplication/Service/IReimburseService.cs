@@ -9,6 +9,7 @@ namespace SampleApplication.Service
     public interface IReimburseService
     {
         List<ReimburseModel.List> GetReimburseList(string sortby, string sortdir, string vWhere);
+        List<ReimburseModel.Detail> GetListReimburseDetail(int reimburseid, string sortby, string sortdir, string vWhere);
         ResponseModel GetReimburseInfo(int reimburseId);
         ResponseModel InsertReimburse(ReimburseModel reimburse);
         ResponseModel DeleteReimburse(int reimburseId);

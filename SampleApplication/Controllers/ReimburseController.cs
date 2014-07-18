@@ -14,10 +14,12 @@ namespace SampleApplication.Controllers
     {
         private readonly static log4net.ILog LOG = log4net.LogManager.GetLogger("ReimburseController");
         private IReimburseService _reimburseService;
+        private IReimburseServiceV2 _reimburseServiceV2;
 
         public ReimburseController()
         {
             _reimburseService = new ReimburseService();
+            _reimburseServiceV2 = new ReimburseServiceV2();
         }
 
         public ActionResult Index()
@@ -75,6 +77,49 @@ namespace SampleApplication.Controllers
             }, JsonRequestBehavior.AllowGet);
         }
 
+        public dynamic GetListReimburseDetail(string _search, long nd, int rows, int? page, string sidx, string sord, int reimburseid, string filters = "")
+        {
+            // Construct where statement
+            string strWhere = GeneralFunction.ConstructWhere(filters);
+
+            // Get Data
+            var reimburse = _reimburseService.GetListReimburseDetail(reimburseid, sidx, sord, strWhere) as IEnumerable<ReimburseModel.Detail>;
+            var pageIndex = Convert.ToInt32(page) - 1;
+            var pageSize = rows;
+            var totalRecords = reimburse.Count();
+            var totalPages = (int)Math.Ceiling((float)totalRecords / (float)pageSize);
+            // default last page
+            if (totalPages > 0)
+            {
+                if (!page.HasValue)
+                {
+                    pageIndex = totalPages - 1;
+                    page = totalPages;
+                }
+            }
+
+            reimburse = reimburse.Skip(pageIndex * pageSize).Take(pageSize);
+
+            return Json(new
+            {
+                total = totalPages,
+                page = page,
+                records = totalRecords,
+                rows = (
+                    from item in reimburse
+                    select new
+                    {
+                        id = item.Id,
+                        cell = new object[] {
+                            item.Description,
+                            item.Amount,
+                            item.IsRejected,
+                            item.ExpenseDate
+                      }
+                    }).ToArray()
+            }, JsonRequestBehavior.AllowGet);
+        }
+
         public dynamic GetReimburseInfo(int Id)
         {
             bool isValid = true;
@@ -105,118 +150,60 @@ namespace SampleApplication.Controllers
         [HttpPost]
         public dynamic Insert(ReimburseModel model)
         {
-            string message = "OK";
-            bool isValid = true;
-            object objResult = null;
             try
             {
-                ResponseModel respModel = _reimburseService.InsertReimburse(model);
-                isValid = respModel.isValid;
-                message = respModel.message;
-                objResult = respModel.objResult;
-                if (!respModel.isValid)
-                {
-                    return Json(new
-                    {
-                        isValid,
-                        message,
-                        objResult
-                    });
-                }
-
-                LOG.Info("InsertReimburse Success");
+                model = _reimburseServiceV2.InsertReimburse(model);
             }
             catch (Exception ex)
             {
                 LOG.Error("InsertReimburse Failed", ex);
-                isValid = false;
-                message = "Insert data failed, Please try again or contact your administrator. ErrorMessage:" + ex.Message;
+                //isValid = false;
+                //message = "Insert data failed, Please try again or contact your administrator. ErrorMessage:" + ex.Message;
             }
 
             return Json(new
             {
-                isValid,
-                message,
-                objResult
+                model
             });
         }
 
         [HttpPost]
         public dynamic Update(ReimburseModel model)
         {
-            string message = "OK";
-            bool isValid = true;
-            object objResult = null;
             try
             {
-                ResponseModel respModel = _reimburseService.UpdateReimburse(model);
-                isValid = respModel.isValid;
-                message = respModel.message;
-                objResult = respModel.objResult;
-                if (!respModel.isValid)
-                {
-                    return Json(new
-                    {
-                        isValid,
-                        message,
-                        objResult
-                    });
-                }
-
+                model = _reimburseServiceV2.UpdateReimburse(model);
 
                 LOG.Info("UpdateReimburse Success");
             }
             catch (Exception ex)
             {
                 LOG.Error("UpdateReimburse Failed", ex);
-                isValid = false;
-                message = "Update data failed, Please try again or contact your administrator. ErrorMessage:" + ex.Message;
             }
 
             return Json(new
             {
-                isValid,
-                message,
-                objResult
+                model
             });
         }
 
         [HttpPost]
-        public dynamic Delete(int Id)
+        public dynamic Delete(ReimburseModel model)
         {
-            string message = "OK";
-            bool isValid = true;
-            object objResult = null;
             try
             {
-                ResponseModel respModel = _reimburseService.DeleteReimburse(Id);
-                isValid = respModel.isValid;
-                message = respModel.message;
-                objResult = respModel.objResult;
-                if (!respModel.isValid)
-                {
-                    return Json(new
-                    {
-                        isValid,
-                        message,
-                        objResult
-                    });
-                }
-
+                model = _reimburseServiceV2.DeleteReimburse(model);
 
                 LOG.Info("DeleteReimburse Success");
             }
             catch (Exception ex)
             {
                 LOG.Error("DeleteReimburse Failed", ex);
-                isValid = false;
-                message = "Delete data failed, Please try again or contact your administrator. ErrorMessage:" + ex.Message;
             }
 
             return Json(new
             {
-                isValid,
-                message
+                model
             });
         }
 
@@ -373,140 +360,75 @@ namespace SampleApplication.Controllers
         [HttpPost]
         public dynamic InsertReimburseDetail(ReimburseModel.Detail model)
         {
-            string message = "OK";
-            bool isValid = true;
-            object objResult = null;
             try
             {
-                ResponseModel respModel = _reimburseService.InsertReimburseDetail(model);
-                isValid = respModel.isValid;
-                message = respModel.message;
-                objResult = respModel.objResult;
-                if (!respModel.isValid)
-                {
-                    return Json(new
-                    {
-                        isValid,
-                        message,
-                        objResult
-                    });
-                }
+                model = _reimburseServiceV2.InsertReimburseDetail(model);
 
                 LOG.Info("InsertReimburseDetail Success");
             }
             catch (Exception ex)
             {
                 LOG.Error("InsertReimburseDetail Failed", ex);
-                isValid = false;
-                message = "Insert data failed, Please try again or contact your administrator.";
             }
             return Json(new
             {
-                isValid,
-                message,
-                objResult
+                model
             });
         }
 
         [HttpPost]
         public dynamic UpdateReimburseDetail(ReimburseModel.Detail model)
         {
-            string message = "OK";
-            bool isValid = true;
-            object objResult = null;
             try
             {
-                ResponseModel respModel = _reimburseService.UpdateReimburseDetail(model);
-                isValid = respModel.isValid;
-                message = respModel.message;
-                objResult = respModel.objResult;
-                if (!respModel.isValid)
-                {
-                    return Json(new
-                    {
-                        isValid,
-                        message,
-                        objResult
-                    });
-                }
-
+                model = _reimburseServiceV2.UpdateReimburseDetail(model);
 
                 LOG.Info("UpdateReimburseDetail Success");
             }
             catch (Exception ex)
             {
                 LOG.Error("UpdateReimburseDetail Failed", ex);
-                isValid = false;
-                message = "Update data failed, Please try again or contact your administrator.";
             }
 
             return Json(new
             {
-                isValid,
-                message,
-                objResult
+                model
             });
         }
 
         [HttpPost]
         public dynamic RejectReimburseDetail(ReimburseModel.Detail model)
         {
-            string message = "OK";
-            bool isValid = true;
             try
             {
                 model.IsRejected = true;
-                ResponseModel respModel = _reimburseService.RejectReimburseDetail(model);
-                isValid = respModel.isValid;
-                message = respModel.message;
-
-                if (isValid)
-                {
-                    message = "Reject Data Success...";
-                    LOG.Info("RejectReimburseDetail Success");
-                }
+                model = _reimburseServiceV2.RejectReimburseDetail(model);
             }
             catch (Exception ex)
             {
                 LOG.Error("RejectReimburseDetail Failed", ex);
-                isValid = false;
-                message = "Reject data failed, Please try again or contact your administrator.";
             }
             return Json(new
             {
-                message = message,
-                isValid = isValid
+                model
             });
         }
 
         [HttpPost]
         public dynamic UnRejectReimburseDetail(ReimburseModel.Detail model)
-        {
-            string message = "OK";
-            bool isValid = true;
+        {            
             try
             {
                 model.IsRejected = false;
-                ResponseModel respModel = _reimburseService.RejectReimburseDetail(model);
-                isValid = respModel.isValid;
-                message = respModel.message;
-
-                if (isValid)
-                {
-                    message = "UnReject Data Success...";
-                    LOG.Info("RejectReimburseDetail Success");
-                }
+                model = _reimburseServiceV2.RejectReimburseDetail(model);
             }
             catch (Exception ex)
             {
                 LOG.Error("UnRejectReimburseDetail Failed", ex);
-                isValid = false;
-                message = "UnReject data failed, Please try again or contact your administrator.";
             }
             return Json(new
             {
-                message = message,
-                isValid = isValid
+                model
             });
         }
 
@@ -527,17 +449,11 @@ namespace SampleApplication.Controllers
                                         Description = x.Description,
                                         Total = x.Total
                                     }).ToList();
-                foreach (var item in listData)
-                {
-                    LOG.Debug(item.Description + "===" + item.Total);
-                }
 
                 if (listData != null)
                 {
                     string strRptPath = "";
                     strRptPath = Server.MapPath("~/Report/Reimburse.rpt");
-
-                    LOG.Debug(strRptPath);
 
                     //Loading Report
                     rd.Load(strRptPath);

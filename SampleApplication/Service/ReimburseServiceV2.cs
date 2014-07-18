@@ -10,12 +10,12 @@ using log4net;
 
 namespace SampleApplication.Service
 {
-    public class ReimburseService : IReimburseService, IDisposable
+    public class ReimburseServiceV2 : IReimburseServiceV2, IDisposable
     {
-        private readonly static log4net.ILog LOG = log4net.LogManager.GetLogger("ReimburseService");
+        private readonly static log4net.ILog LOG = log4net.LogManager.GetLogger("ReimburseServiceV2");
         private readonly IReimburseRepository _reimburseRepo;
 
-        public ReimburseService()
+        public ReimburseServiceV2()
         {
             _reimburseRepo = new ReimburseRepository();
         }
@@ -64,18 +64,15 @@ namespace SampleApplication.Service
         }
 
         // Reimburse Info
-        public ResponseModel GetReimburseInfo(int reimburseId)
+        public ReimburseModel GetReimburseInfo(int reimburseId)
         {
-            ResponseModel respModel = new ResponseModel();
-            respModel.isValid = true;
-            respModel.message = "OK";
-            respModel.objResult = null;
+            ReimburseModel model = new ReimburseModel();
+            model.Errors = new Dictionary<string, string>();
             try
             {
                 var reimburse = _reimburseRepo.Find(r => r.Id == reimburseId);
                 if (reimburse != null)
                 {
-                    ReimburseModel model = new ReimburseModel();
                     model.Description = reimburse.Description;
                     model.Id = reimburse.Id;
                     model.IsClearaned = reimburse.IsCleared.HasValue ? reimburse.IsCleared.Value : false;
@@ -101,41 +98,31 @@ namespace SampleApplication.Service
                     }
                     model.ListDetail = listDetail;
 
-                    respModel.isValid = true;
-                    respModel.message = "OK";
-                    respModel.objResult = model;
                 }
                 else
                 {
-                    respModel.isValid = false;
-                    respModel.message = "Reimburse not found";
+                    model.Errors.Add("Generic", "Reimburse not found");
                 }
             }
             catch (Exception ex)
             {
                 LOG.Error("GetReimburseInfo Failed", ex);
-                respModel.isValid = false;
-                respModel.message = "There is error when load this invoice..";
+                model.Errors.Add("Generic", "There is error when load this invoice..");
             }
 
-            return respModel;
+            return model;
         }
 
         // Insert Reimburse
-        public ResponseModel InsertReimburse(ReimburseModel reimburse)
+        public ReimburseModel InsertReimburse(ReimburseModel reimburse)
         {
-            ResponseModel respModel = new ResponseModel();
-            respModel.isValid = true;
-            respModel.message = "OK";
-            respModel.objResult = null;
+            reimburse.Errors = new Dictionary<string, string>();
             try
             {
-                string message = "";
-                respModel.isValid = this.ValidationInsert(reimburse, out message);
-                if (!respModel.isValid)
+                reimburse.Errors = this.ValidationInsert(reimburse);
+                if (reimburse.Errors != null && reimburse.Errors.Count > 0)
                 {
-                    respModel.message = message;
-                    return respModel;
+                    return reimburse;
                 }
 
                 Reimburse newReimburse = new Reimburse();
@@ -157,10 +144,6 @@ namespace SampleApplication.Service
                     }
                 }
 
-                respModel.isValid = true;
-                respModel.message = "Insert Data Success...";
-                respModel.objResult = reimburse;
-
                 LOG.Error("InsertReimburse Sucess");
             }
             catch (DbEntityValidationException dbEx)
@@ -177,39 +160,31 @@ namespace SampleApplication.Service
                 }
 
                 LOG.Error("InsertReimburse Failed", dbEx);
-                respModel.isValid = false;
-                respModel.message = "Insert Reimburse failed, Please try again or contact your administrator.";
+                reimburse.Errors.Add("Generic", "Insert Reimburse failed, Please try again or contact your administrator.");
             }
             catch (Exception ex)
             {
                 LOG.Error("InsertReimburse Failed", ex);
-                respModel.isValid = false;
-                respModel.message = "Insert Reimburse Failed, Please try again or contact your administrator.";
+                reimburse.Errors.Add("Generic", "Insert Reimburse Failed, Please try again or contact your administrator.");
             }
 
-            return respModel;
+            return reimburse;
         }
 
         // Delete Reimburse
-        public ResponseModel DeleteReimburse(int reimburseId)
+        public ReimburseModel DeleteReimburse(ReimburseModel reimburse)
         {
-            ResponseModel respModel = new ResponseModel();
-            respModel.isValid = true;
-            respModel.message = "OK";
-            respModel.objResult = null;
+            reimburse.Errors = new Dictionary<string, string>();
             try
             {
-                Reimburse deleteReimburse = _reimburseRepo.Find(p => p.Id == reimburseId);
+                Reimburse deleteReimburse = _reimburseRepo.Find(p => p.Id == reimburse.Id);
                 if (deleteReimburse != null)
                 {
                     // Delete Reimburse Detail
-                    _reimburseRepo.DeleteReimburseDetail(reimburseId);
+                    _reimburseRepo.DeleteReimburseDetail(deleteReimburse.Id);
 
                     // Delete Reimburse
-                    _reimburseRepo.DeleteReimburse(reimburseId);
-
-                    respModel.isValid = true;
-                    respModel.message = "Delete Reimburse Success...";
+                    _reimburseRepo.DeleteReimburse(deleteReimburse.Id);
                 }
             }
             catch (DbEntityValidationException dbEx)
@@ -226,34 +201,27 @@ namespace SampleApplication.Service
                 }
 
                 LOG.Error("DeleteReimburse Failed", dbEx);
-                respModel.isValid = false;
-                respModel.message = "Delete Reimburse failed, Please try again or contact your administrator.";
+                reimburse.Errors.Add("Generic", "Delete Reimburse failed, Please try again or contact your administrator.");
             }
             catch (Exception ex)
             {
                 LOG.Error("DeleteReimburse Failed", ex);
-                respModel.isValid = false;
-                respModel.message = "Delete Reimburse Failed, Please try again or contact your administrator.";
+                reimburse.Errors.Add("Generic", "Delete Reimburse Failed, Please try again or contact your administrator.");
             }
 
-            return respModel;
+            return reimburse;
         }
 
         // Update Reimburse
-        public ResponseModel UpdateReimburse(ReimburseModel reimburse)
+        public ReimburseModel UpdateReimburse(ReimburseModel reimburse)
         {
-            ResponseModel respModel = new ResponseModel();
-            respModel.isValid = true;
-            respModel.message = "OK";
-            respModel.objResult = null;
+            reimburse.Errors = new Dictionary<string, string>();
             try
             {
-                string message = "";
-                respModel.isValid = this.ValidationUpdate(reimburse, out message);
-                if (!respModel.isValid)
+                reimburse.Errors = this.ValidationUpdate(reimburse);
+                if (reimburse.Errors != null && reimburse.Errors.Count > 0)
                 {
-                    respModel.message = message;
-                    return respModel;
+                    return reimburse;
                 }
 
                 Reimburse updateReimburse = _reimburseRepo.Find(p => p.Id == reimburse.Id);
@@ -265,16 +233,11 @@ namespace SampleApplication.Service
 
                     _reimburseRepo.UpdateReimburse(updateReimburse);
 
-                    respModel.isValid = true;
-                    respModel.message = "Update Data Success...";
-                    respModel.objResult = reimburse;
-
                     LOG.Info("UpdateReimburse Success");
                 }
                 else
                 {
-                    respModel.isValid = false;
-                    respModel.message = "Reimburse not found...";
+                    reimburse.Errors.Add("Generic", "Reimburse not found...");
                 }
             }
             catch (DbEntityValidationException dbEx)
@@ -291,34 +254,27 @@ namespace SampleApplication.Service
                 }
 
                 LOG.Error("UpdateReimburse Failed", dbEx);
-                respModel.isValid = false;
-                respModel.message = "Update data failed, Please try again or contact your administrator.";
+                reimburse.Errors.Add("Generic", "Update data failed, Please try again or contact your administrator.");
             }
             catch (Exception ex)
             {
                 LOG.Error("UpdateReimburse Failed", ex);
-                respModel.isValid = false;
-                respModel.message = "Update data Failed, Please try again or contact your administrator.";
+                reimburse.Errors.Add("Generic", "Update data Failed, Please try again or contact your administrator.");
             }
 
-            return respModel;
+            return reimburse;
         }
 
         // Submit Reimburse
-        public ResponseModel SubmitReimburse(ReimburseModel reimburse)
+        public ReimburseModel SubmitReimburse(ReimburseModel reimburse)
         {
-            ResponseModel respModel = new ResponseModel();
-            respModel.isValid = true;
-            respModel.message = "OK";
-            respModel.objResult = null;
+            reimburse.Errors = new Dictionary<string, string>();
             try
             {
-                string message = "";
-                respModel.isValid = this.ValidationSubmit(reimburse, out message);
-                if (!respModel.isValid)
+                reimburse.Errors = this.ValidationSubmit(reimburse);
+                if (reimburse.Errors != null && reimburse.Errors.Count > 0)
                 {
-                    respModel.message = message;
-                    return respModel;
+                    return reimburse;
                 }
 
                 Reimburse submitReimburse = _reimburseRepo.Find(p => p.Id == reimburse.Id);
@@ -329,16 +285,11 @@ namespace SampleApplication.Service
 
                     _reimburseRepo.UpdateReimburse(submitReimburse);
 
-                    respModel.isValid = true;
-                    respModel.message = "Submit Data Success...";
-                    respModel.objResult = reimburse;
-
                     LOG.Info("SubmitReimburse Success");
                 }
                 else
                 {
-                    respModel.isValid = false;
-                    respModel.message = "Reimburse not found...";
+                    reimburse.Errors.Add("Generic", "Reimburse not found...");
                 }
             }
             catch (DbEntityValidationException dbEx)
@@ -355,34 +306,27 @@ namespace SampleApplication.Service
                 }
 
                 LOG.Error("SubmitReimburse Failed", dbEx);
-                respModel.isValid = false;
-                respModel.message = "Submit data failed, Please try again or contact your administrator.";
+                reimburse.Errors.Add("Generic", "Submit data failed, Please try again or contact your administrator.");
             }
             catch (Exception ex)
             {
                 LOG.Error("SubmitReimburse Failed", ex);
-                respModel.isValid = false;
-                respModel.message = "Update Submit Failed, Please try again or contact your administrator.";
+                reimburse.Errors.Add("Generic", "Update Submit Failed, Please try again or contact your administrator.");
             }
 
-            return respModel;
+            return reimburse;
         }
 
         // Confirm Reimburse
-        public ResponseModel ConfirmReimburse(ReimburseModel reimburse)
+        public ReimburseModel ConfirmReimburse(ReimburseModel reimburse)
         {
-            ResponseModel respModel = new ResponseModel();
-            respModel.isValid = true;
-            respModel.message = "OK";
-            respModel.objResult = null;
+            reimburse.Errors = new Dictionary<string, string>();
             try
             {
-                string message = "";
-                respModel.isValid = this.ValidationConfirm(reimburse, out message);
-                if (!respModel.isValid)
+                reimburse.Errors = this.ValidationConfirm(reimburse);
+                if (reimburse.Errors != null && reimburse.Errors.Count > 0)
                 {
-                    respModel.message = message;
-                    return respModel;
+                    return reimburse;
                 }
 
                 Reimburse confirmReimburse = _reimburseRepo.Find(p => p.Id == reimburse.Id);
@@ -393,16 +337,11 @@ namespace SampleApplication.Service
 
                     _reimburseRepo.UpdateReimburse(confirmReimburse);
 
-                    respModel.isValid = true;
-                    respModel.message = "Confirm Data Success...";
-                    respModel.objResult = reimburse;
-
                     LOG.Info("ConfirmReimburse Success");
                 }
                 else
                 {
-                    respModel.isValid = false;
-                    respModel.message = "Reimburse not found...";
+                    reimburse.Errors.Add("Generic", "Reimburse not found...");
                 }
             }
             catch (DbEntityValidationException dbEx)
@@ -419,34 +358,27 @@ namespace SampleApplication.Service
                 }
 
                 LOG.Error("ConfirmReimburse Failed", dbEx);
-                respModel.isValid = false;
-                respModel.message = "Confirm data failed, Please try again or contact your administrator.";
+                reimburse.Errors.Add("Generic", "Confirm data failed, Please try again or contact your administrator.");
             }
             catch (Exception ex)
             {
                 LOG.Error("ConfirmReimburse Failed", ex);
-                respModel.isValid = false;
-                respModel.message = "Confirm data Failed, Please try again or contact your administrator.";
+                reimburse.Errors.Add("Generic", "Confirm data Failed, Please try again or contact your administrator.");
             }
 
-            return respModel;
+            return reimburse;
         }
 
         // Clear Reimburse
-        public ResponseModel ClearReimburse(ReimburseModel reimburse)
+        public ReimburseModel ClearReimburse(ReimburseModel reimburse)
         {
-            ResponseModel respModel = new ResponseModel();
-            respModel.isValid = true;
-            respModel.message = "OK";
-            respModel.objResult = null;
+            reimburse.Errors = new Dictionary<string, string>();
             try
             {
-                string message = "";
-                respModel.isValid = this.ValidationClear(reimburse, out message);
-                if (!respModel.isValid)
+                reimburse.Errors = this.ValidationClear(reimburse);
+                if (reimburse.Errors != null && reimburse.Errors.Count > 0)
                 {
-                    respModel.message = message;
-                    return respModel;
+                    return reimburse;
                 }
 
                 Reimburse clearReimburse = _reimburseRepo.Find(p => p.Id == reimburse.Id);
@@ -457,16 +389,11 @@ namespace SampleApplication.Service
 
                     _reimburseRepo.UpdateReimburse(clearReimburse);
 
-                    respModel.isValid = true;
-                    respModel.message = "Clear Data Success...";
-                    respModel.objResult = reimburse;
-
                     LOG.Info("ClearReimburse Success");
                 }
                 else
                 {
-                    respModel.isValid = false;
-                    respModel.message = "Reimburse not found...";
+                    reimburse.Errors.Add("Generic", "Reimburse not found...");
                 }
             }
             catch (DbEntityValidationException dbEx)
@@ -483,29 +410,26 @@ namespace SampleApplication.Service
                 }
 
                 LOG.Error("ClearReimburse Failed", dbEx);
-                respModel.isValid = false;
-                respModel.message = "Clear data failed, Please try again or contact your administrator.";
+                reimburse.Errors.Add("Generic", "Clear data failed, Please try again or contact your administrator.");
             }
             catch (Exception ex)
             {
                 LOG.Error("ClearReimburse Failed", ex);
-                respModel.isValid = false;
-                respModel.message = "Clear data Failed, Please try again or contact your administrator.";
+                reimburse.Errors.Add("Generic", "Clear data Failed, Please try again or contact your administrator.");
             }
 
-            return respModel;
+            return reimburse;
         }
 
-        public bool Validation(ReimburseModel model, out string message)
+        public Dictionary<string, string> Validation(ReimburseModel model)
         {
-            bool isValid = true;
-            message = "OK";
+            if (model.Errors == null)
+                model.Errors = new Dictionary<string, string>();
 
             // Description
             if (String.IsNullOrEmpty(model.Description) || model.Description.Trim() == "")
             {
-                message = "Invalid Description...";
-                return false;
+                model.Errors.Add("Description", "Invalid Description");
             }
 
             //// Total
@@ -515,30 +439,28 @@ namespace SampleApplication.Service
             //    return false;
             //}
 
-            return isValid;
+            return model.Errors;
         }
 
-        public bool ValidationInsert(ReimburseModel model, out string message)
+        public Dictionary<string, string> ValidationInsert(ReimburseModel model)
         {
-            bool isValid = this.Validation(model, out message);
+            model.Errors = this.Validation(model);
 
             if (AccountModel.GetUserTypeId() == AccountModel.UserTypeCashier)
             {
-                isValid = false;
-                message = "You dont have permission...";
+                model.Errors.Add("Generic", "You dont have permission...");
             }
 
-            return isValid;
+            return model.Errors;
         }
 
-        public bool ValidationUpdate(ReimburseModel model, out string message)
+        public Dictionary<string, string> ValidationUpdate(ReimburseModel model)
         {
-            bool isValid = this.Validation(model, out message);
+            model.Errors = this.Validation(model);
 
             if (AccountModel.GetUserTypeId() == AccountModel.UserTypeCashier)
             {
-                isValid = false;
-                message = "You dont have permission...";
+                model.Errors.Add("Generic", "You dont have permission...");
             }
 
             var reimburse = _reimburseRepo.Find(r => r.Id == model.Id);
@@ -546,32 +468,27 @@ namespace SampleApplication.Service
             {
                 if (reimburse.IsSubmitted.HasValue && reimburse.IsSubmitted.Value == true)
                 {
-                    message = "This reimburse has been Submitted...";
-                    isValid = false;
-                    return isValid;
+                    model.Errors.Add("Generic", "This reimburse has been Submitted...");
                 }
             }
             else
             {
-                isValid = false;
-                message = "Reimburse not found...";
+                model.Errors.Add("Generic", "Reimburse not found...");
             }
 
 
-            return isValid;
+            return model.Errors;
         }
 
-        public bool ValidationSubmit(ReimburseModel model, out string message)
+        public Dictionary<string, string> ValidationSubmit(ReimburseModel model)
         {
-            message = "";
-            bool isValid = true;
+            if (model.Errors == null)
+                model.Errors = new Dictionary<string, string>();
 
             // Except Employee can not submit
             if (AccountModel.GetUserTypeId() != AccountModel.UserTypeEmployee)
             {
-                message = "You dont have permission to submit reimburse...";
-                isValid = false;
-                return isValid;
+                model.Errors.Add("Generic", "You dont have permission to submit reimburse...");
             }
 
             var reimburse = _reimburseRepo.Find(r => r.Id == model.Id);
@@ -579,31 +496,26 @@ namespace SampleApplication.Service
             {
                 if (reimburse.IsSubmitted.HasValue && reimburse.IsSubmitted.Value == true)
                 {
-                    message = "This reimburse has been Submitted...";
-                    isValid = false;
-                    return isValid;
+                    model.Errors.Add("Generic", "This reimburse has been Submitted...");
                 }
             }
             else
             {
-                isValid = false;
-                message = "Reimburse not found...";
+                model.Errors.Add("Generic", "Reimburse not found...");
             }
 
-            return isValid;
+            return model.Errors;
         }
 
-        public bool ValidationConfirm(ReimburseModel model, out string message)
+        public Dictionary<string, string> ValidationConfirm(ReimburseModel model)
         {
-            message = "";
-            bool isValid = true;
+            if (model.Errors == null)
+                model.Errors = new Dictionary<string, string>();
 
             // Except Cashier can not confirm
             if (AccountModel.GetUserTypeId() != AccountModel.UserTypeCashier)
             {
-                message = "You dont have permission to confirm reimburse...";
-                isValid = false;
-                return isValid;
+                model.Errors.Add("Generic", "You dont have permission to confirm reimburse...");
             }
 
             var reimburse = _reimburseRepo.Find(r => r.Id == model.Id);
@@ -611,38 +523,31 @@ namespace SampleApplication.Service
             {
                 if (!reimburse.IsSubmitted.HasValue || (reimburse.IsSubmitted.HasValue && reimburse.IsSubmitted.Value == false))
                 {
-                    message = "Please Submit Reimbuse First...";
-                    isValid = false;
-                    return isValid;
+                    model.Errors.Add("Generic", "Please Submit Reimbuse First...");
                 }
 
                 if (reimburse.IsConfirmed.HasValue && reimburse.IsConfirmed.Value == true)
                 {
-                    message = "This reimburse has been Confirmed...";
-                    isValid = false;
-                    return isValid;
+                    model.Errors.Add("Generic", "This reimburse has been Confirmed...");
                 }
             }
             else
             {
-                isValid = false;
-                message = "Reimburse not found...";
+                model.Errors.Add("Generic", "Reimburse not found...");
             }
 
-            return isValid;
+            return model.Errors;
         }
 
-        public bool ValidationClear(ReimburseModel model, out string message)
+        public Dictionary<string, string> ValidationClear(ReimburseModel model)
         {
-            message = "";
-            bool isValid = true;
+            if (model.Errors == null)
+                model.Errors = new Dictionary<string, string>();
 
             // Except Employee can not clear
             if (AccountModel.GetUserTypeId() != AccountModel.UserTypeEmployee)
             {
-                message = "You dont have permission to clear reimburse...";
-                isValid = false;
-                return isValid;
+                model.Errors.Add("Generic", "You dont have permission to clear reimburse...");
             }
 
             var reimburse = _reimburseRepo.Find(r => r.Id == model.Id);
@@ -650,45 +555,36 @@ namespace SampleApplication.Service
             {
                 if (!reimburse.IsSubmitted.HasValue || (reimburse.IsSubmitted.HasValue && reimburse.IsSubmitted.Value == false))
                 {
-                    message = "Please Submit Reimbuse First...";
-                    isValid = false;
-                    return isValid;
+                    model.Errors.Add("Generic", "Please Submit Reimbuse First...");
                 }
 
                 if (!reimburse.IsConfirmed.HasValue || (reimburse.IsConfirmed.HasValue && reimburse.IsConfirmed.Value == false))
                 {
-                    message = "Please Confirm Reimbuse First...";
-                    isValid = false;
-                    return isValid;
+                    model.Errors.Add("Generic", "Please Confirm Reimbuse First...");
                 }
 
                 if (reimburse.IsCleared.HasValue && reimburse.IsCleared.Value == true)
                 {
-                    message = "This reimburse has been Cleared...";
-                    isValid = false;
-                    return isValid;
+                    model.Errors.Add("Generic", "This reimburse has been Cleared...");
                 }
             }
             else
             {
-                isValid = false;
-                message = "Reimburse not found...";
+                model.Errors.Add("Generic", "Reimburse not found...");
             }
 
-            return isValid;
+            return model.Errors;
         }
 
-        public bool ValidationRejectDetail(ReimburseModel.Detail model, out string message)
+        public Dictionary<string, string> ValidationRejectDetail(ReimburseModel.Detail model)
         {
-            message = "";
-            bool isValid = true;
+            if (model.Errors == null)
+                model.Errors = new Dictionary<string, string>();
 
             // Except Cashier can not clear
             if (AccountModel.GetUserTypeId() == AccountModel.UserTypeEmployee)
             {
-                message = "You dont have permission to reject...";
-                isValid = false;
-                return isValid;
+                model.Errors.Add("Generic", "You dont have permission to reject...");
             }
 
             var reimburseDetail = _reimburseRepo.GetReimburseDetail(model.Id);
@@ -697,64 +593,128 @@ namespace SampleApplication.Service
                 int reimburseId = reimburseDetail.ReimburseId.HasValue ? reimburseDetail.ReimburseId.Value : 0;
                 if (!this.IsValidReimburse(reimburseId))
                 {
-                    message = "Invalid Reimburse...";
-                    isValid = false;
-                    return isValid;
+                    model.Errors.Add("Generic", "Invalid Reimburse...");
                 }
 
                 // Unable Reject/UnReject before submiting
                 if (!this.IsSubmittedReimburse(reimburseId))
                 {
-                    message = "Unable Reject/UnReject before Submitting...";
-                    isValid = false;
-                    return isValid;
+                    model.Errors.Add("Generic", "Unable Reject/UnReject before Submitting...");
                 }
 
                 // Unable Reject/UnReject if already Confirmed
                 if (this.IsConfirmedReimburse(reimburseId))
                 {
-                    message = "This Reimburse already Confirmed...";
-                    isValid = false;
-                    return isValid;
+                    model.Errors.Add("Generic", "This Reimburse already Confirmed...");
                 }
             }
             else
             {
-                isValid = false;
-                message = "Reimburse Detail not found...";
+                model.Errors.Add("Generic", "Reimburse Detail not found...");
             }
 
-            return isValid;
+            return model.Errors;
         }
 
-        public ResponseModel InsertReimburseDetail(ReimburseModel.Detail reimburseDetail)
+        public Dictionary<string, string> ValidationDetail(ReimburseModel.Detail model)
         {
-            ResponseModel respModel = new ResponseModel();
-            respModel.isValid = true;
-            respModel.message = "OK";
-            respModel.objResult = null;
+            if (model.Errors == null)
+                model.Errors = new Dictionary<string, string>();
+
+            // Description
+            if (String.IsNullOrEmpty(model.Description) || model.Description.Trim() == "")
+            {
+                model.Errors.Add("DetailDescription", "Invalid Description");
+            }
+
+            // Amount
+            if (model.Amount <= 0)
+            {
+                model.Errors.Add("DetailAmount", "Invalid Amount...");
+            }
+
+            return model.Errors;
+        }
+
+        public Dictionary<string, string> ValidationInsertDetail(ReimburseModel.Detail model)
+        {
+            model.Errors = this.ValidationDetail(model);
+
+            // Except Employee
+            if (AccountModel.GetUserTypeId() != AccountModel.UserTypeEmployee)
+            {
+                model.Errors.Add("Generic", "You dont have permission..");
+            }
+
+            if (!this.IsValidReimburse(model.ReimburseId))
+            {
+                model.Errors.Add("Generic", "Invalid Reimburse Id..");
+            }
+
+            if (this.IsSubmittedReimburse(model.ReimburseId))
+            {
+                model.Errors.Add("Generic", "This Reimburse has been Submitted and Unable to Add or Edit more..");
+            }
+
+            return model.Errors;
+        }
+
+        public Dictionary<string, string> ValidationUpdateDetail(ReimburseModel.Detail model)
+        {
+            model.Errors = this.ValidationDetail(model);
+
+            // Except Employee
+            if (AccountModel.GetUserTypeId() != AccountModel.UserTypeEmployee)
+            {
+                model.Errors.Add("Generic", "You dont have permission..");
+            }
+
+            if (!this.IsValidReimburse(model.ReimburseId))
+            {
+                model.Errors.Add("Generic", "Invalid Reimburse Id..");
+            }
+
+            if (this.IsSubmittedReimburse(model.ReimburseId))
+            {
+                model.Errors.Add("Generic", "This Reimburse has been Submitted and Unable to Add or Edit more..");
+            }
+
+            return model.Errors;
+        }
+
+        public Dictionary<string, string> ValidationDeleteDetail(ReimburseModel.Detail model)
+        {
+            model.Errors = this.ValidationDetail(model);
+
+            // Except Employee
+            if (AccountModel.GetUserTypeId() != AccountModel.UserTypeEmployee)
+            {
+                model.Errors.Add("Generic", "You dont have permission..");
+            }
+
+            if (!this.IsValidReimburse(model.ReimburseId))
+            {
+                model.Errors.Add("Generic", "Invalid Reimburse Id..");
+            }
+
+            if (this.IsSubmittedReimburse(model.ReimburseId))
+            {
+                model.Errors.Add("Generic", "This Reimburse has been Submitted and Unable to Add or Edit more..");
+            }
+
+            return model.Errors;
+        }
+
+        public ReimburseModel.Detail InsertReimburseDetail(ReimburseModel.Detail reimburseDetail)
+        {
+            // Construct Error
+            reimburseDetail.Errors = new Dictionary<string, string>();
             try
             {
-                // Except Employee
-                if (AccountModel.GetUserTypeId() != AccountModel.UserTypeEmployee)
+                reimburseDetail.Errors = this.ValidationInsertDetail(reimburseDetail);
+                if (reimburseDetail.Errors != null && reimburseDetail.Errors.Count > 0)
                 {
-                    respModel.isValid = false;
-                    respModel.message = "You dont have permission..";
-                    return respModel;
-                }
-
-                if (!this.IsValidReimburse(reimburseDetail.ReimburseId))
-                {
-                    respModel.isValid = false;
-                    respModel.message = "Invalid Reimburse Id..";
-                    return respModel;
-                }
-
-                if (this.IsSubmittedReimburse(reimburseDetail.ReimburseId))
-                {
-                    respModel.isValid = false;
-                    respModel.message = "This Reimburse has been Submitted and Unable to Add or Edit more..";
-                    return respModel;
+                    return reimburseDetail;
                 }
 
                 ReimburseDetail newReimburseDetail = new ReimburseDetail();
@@ -766,13 +726,10 @@ namespace SampleApplication.Service
                 newReimburseDetail.ReimburseId = reimburseDetail.ReimburseId;
 
                 newReimburseDetail = _reimburseRepo.InsertReimburseDetail(newReimburseDetail);
+                reimburseDetail.Id = newReimburseDetail.Id;
 
                 // Update Total and Actual Paid on Reimburse table
                 this.ReCalculateTotal(reimburseDetail.ReimburseId);
-
-                respModel.isValid = true;
-                respModel.message = "Insert Reimburse Detail Success...";
-                respModel.objResult = reimburseDetail;
 
                 LOG.Info("InsertReimburseDetail Success");
             }
@@ -790,47 +747,26 @@ namespace SampleApplication.Service
                 }
 
                 LOG.Error("InsertReimburseDetail Failed", dbEx);
-                respModel.isValid = false;
-                respModel.message = "Insert Reimburse Detail failed, Please try again or contact your administrator.";
+                reimburseDetail.Errors.Add("Generic", "Insert Reimburse Detail failed, Please try again or contact your administrator.");
             }
             catch (Exception ex)
             {
                 LOG.Error("InsertReimburseDetail Failed", ex);
-                respModel.isValid = false;
-                respModel.message = "Insert Reimburse Detail Failed, Please try again or contact your administrator.";
+                reimburseDetail.Errors.Add("Generic", "Insert Reimburse Detail Failed, Please try again or contact your administrator.");
             }
 
-            return respModel;
+            return reimburseDetail;
         }
 
-        public ResponseModel UpdateReimburseDetail(ReimburseModel.Detail reimburseDetail)
+        public ReimburseModel.Detail UpdateReimburseDetail(ReimburseModel.Detail reimburseDetail)
         {
-            ResponseModel respModel = new ResponseModel();
-            respModel.isValid = true;
-            respModel.message = "OK";
-            respModel.objResult = null;
+            reimburseDetail.Errors = new Dictionary<string, string>();
             try
             {
-                // Except Employee
-                if (AccountModel.GetUserTypeId() != AccountModel.UserTypeEmployee)
+                reimburseDetail.Errors = this.ValidationUpdateDetail(reimburseDetail);
+                if (reimburseDetail.Errors != null && reimburseDetail.Errors.Count > 0)
                 {
-                    respModel.isValid = false;
-                    respModel.message = "You dont have permission..";
-                    return respModel;
-                }
-
-                if (!this.IsValidReimburse(reimburseDetail.ReimburseId))
-                {
-                    respModel.isValid = false;
-                    respModel.message = "Invalid Reimburse Id..";
-                    return respModel;
-                }
-
-                if (this.IsSubmittedReimburse(reimburseDetail.ReimburseId))
-                {
-                    respModel.isValid = false;
-                    respModel.message = "This Reimburse has been Submitted and Unable to Add or Edit more..";
-                    return respModel;
+                    return reimburseDetail;
                 }
 
                 ReimburseDetail updateReimburseDetail = _reimburseRepo.GetReimburseDetail(reimburseDetail.Id);
@@ -845,10 +781,6 @@ namespace SampleApplication.Service
 
                     // Update Total and Actual Paid on Reimburse table
                     this.ReCalculateTotal(reimburseDetail.ReimburseId);
-
-                    respModel.isValid = true;
-                    respModel.message = "Update Reimburse Detail Success...";
-                    respModel.objResult = reimburseDetail;
 
                     LOG.Info("UpdateReimburseDetail Success");
                 }
@@ -867,64 +799,38 @@ namespace SampleApplication.Service
                 }
 
                 LOG.Error("UpdateReimburseDetail Failed", dbEx);
-                respModel.isValid = false;
-                respModel.message = "Update Reimburse Detail failed, Please try again or contact your administrator.";
+                reimburseDetail.Errors.Add("Generic", "Update Reimburse Detail failed, Please try again or contact your administrator.");
             }
             catch (Exception ex)
             {
                 LOG.Error("UpdateReimburseDetail Failed", ex);
-                respModel.isValid = false;
-                respModel.message = "Update Reimburse Detail Failed, Please try again or contact your administrator.";
+                reimburseDetail.Errors.Add("Generic", "Update Reimburse Detail Failed, Please try again or contact your administrator.");
             }
 
-            return respModel;
+            return reimburseDetail;
         }
 
-        public ResponseModel DeleteReimburseDetail(int reimburseDetailId)
+        public ReimburseModel.Detail DeleteReimburseDetail(ReimburseModel.Detail reimburseDetail)
         {
-            ResponseModel respModel = new ResponseModel();
-            respModel.objResult = null;
+            reimburseDetail.Errors = new Dictionary<string, string>();
             try
             {
-                // Except Employee
-                if (AccountModel.GetUserTypeId() != AccountModel.UserTypeEmployee)
+                reimburseDetail.Errors = this.ValidationDeleteDetail(reimburseDetail);
+                if (reimburseDetail.Errors != null && reimburseDetail.Errors.Count > 0)
                 {
-                    respModel.isValid = false;
-                    respModel.message = "You dont have permission..";
-                    return respModel;
+                    return reimburseDetail;
                 }
 
-                ReimburseDetail detail = _reimburseRepo.GetReimburseDetail(reimburseDetailId);
+                ReimburseDetail detail = _reimburseRepo.GetReimburseDetail(reimburseDetail.Id);
 
                 if (detail != null)
                 {
-                    int reimburseId = detail.ReimburseId.HasValue ? detail.ReimburseId.Value : 0;
-                    if (!this.IsValidReimburse(reimburseId))
-                    {
-                        respModel.isValid = false;
-                        respModel.message = "Invalid Reimburse Id..";
-                        return respModel;
-                    }
+                    _reimburseRepo.DeleteReimburseDetail(detail.Id);
 
-                    if (this.IsSubmittedReimburse(reimburseId))
-                    {
-                        respModel.isValid = false;
-                        respModel.message = "This Reimburse has been Submitted and Unable to Add or Edit more..";
-                        return respModel;
-                    }
-                }
-
-                _reimburseRepo.DeleteReimburseDetail(reimburseDetailId);
-
-                if (detail != null)
-                {
-                    int reimburseId = detail.ReimburseId.HasValue ? detail.ReimburseId.Value : 0;
                     // Update Total and Actual Paid on Reimburse table
+                    int reimburseId = detail.ReimburseId.HasValue ? detail.ReimburseId.Value : 0;
                     this.ReCalculateTotal(reimburseId);
                 }
-
-                respModel.isValid = true;
-                respModel.message = "Delete Data Success...";
 
                 LOG.Info("DeleteReimburseDetail Success");
             }
@@ -941,34 +847,27 @@ namespace SampleApplication.Service
                     }
                 }
                 LOG.Error("DeleteReimburseDetail Failed", dbEx);
-                respModel.isValid = false;
-                respModel.message = "Delete Data Failed... ErrorMessage:" + dbEx.Message;
+                reimburseDetail.Errors.Add("Generic", "Delete Data Failed... ErrorMessage:" + dbEx.Message);
             }
             catch (Exception ex)
             {
                 LOG.Error("DeleteReimburseDetail Failed", ex);
-                respModel.isValid = false;
-                respModel.message = "Delete Data Failed... ErrorMessage:" + ex.Message;
+                reimburseDetail.Errors.Add("Generic", "Delete Data Failed... ErrorMessage:" + ex.Message);
             }
 
-            return respModel;
+            return reimburseDetail;
         }
 
         // Reject Reimburse Detail
-        public ResponseModel RejectReimburseDetail(ReimburseModel.Detail reimburseDetail)
+        public ReimburseModel.Detail RejectReimburseDetail(ReimburseModel.Detail reimburseDetail)
         {
-            ResponseModel respModel = new ResponseModel();
-            respModel.isValid = true;
-            respModel.message = "OK";
-            respModel.objResult = null;
+            reimburseDetail.Errors = new Dictionary<string, string>();
             try
             {
-                string message = "";
-                respModel.isValid = this.ValidationRejectDetail(reimburseDetail, out message);
-                if (!respModel.isValid)
+                reimburseDetail.Errors = this.ValidationRejectDetail(reimburseDetail);
+                if (reimburseDetail.Errors != null && reimburseDetail.Errors.Count > 0)
                 {
-                    respModel.message = message;
-                    return respModel;
+                    return reimburseDetail;
                 }
 
                 ReimburseDetail rejectReimburse = _reimburseRepo.GetReimburseDetail(reimburseDetail.Id);
@@ -982,15 +881,11 @@ namespace SampleApplication.Service
                     int reimburseId = rejectReimburse.ReimburseId.HasValue ? rejectReimburse.ReimburseId.Value : 0;
                     this.ReCalculateTotal(reimburseId);
 
-                    respModel.isValid = true;
-                    respModel.message = "Reject/UnReject Data Success...";
-
                     LOG.Info("RejectReimburseDetail Success");
                 }
                 else
                 {
-                    respModel.isValid = false;
-                    respModel.message = "Reimburse not found...";
+                    reimburseDetail.Errors.Add("Generic", "Reimburse not found...");
                 }
             }
             catch (DbEntityValidationException dbEx)
@@ -1007,17 +902,15 @@ namespace SampleApplication.Service
                 }
 
                 LOG.Error("RejectReimburseDetail Failed", dbEx);
-                respModel.isValid = false;
-                respModel.message = "Reject data failed, Please try again or contact your administrator.";
+                reimburseDetail.Errors.Add("Generic", "Reject data failed, Please try again or contact your administrator.");
             }
             catch (Exception ex)
             {
                 LOG.Error("RejectReimburseDetail Failed", ex);
-                respModel.isValid = false;
-                respModel.message = "Reject data Failed, Please try again or contact your administrator.";
+                reimburseDetail.Errors.Add("Generic", "Reject data Failed, Please try again or contact your administrator.");
             }
 
-            return respModel;
+            return reimburseDetail;
         }
 
         private void ReCalculateTotal(int reimburseId)

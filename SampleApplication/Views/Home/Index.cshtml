@@ -1,5 +1,155 @@
 ﻿@{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Reimburse";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<script type="text/javascript" src="@Url.Content("~/Content/app_js/home.js")"></script>
 
-<h2>Index</h2>
+<div id="ua_panel" class="easyui-panel" style="text-align: left;" data-options="modal:true" title=".: Reimburse :.">
+    <table>
+        <tr>
+            <td>
+                <div id="reimburse_panel" class="easyui-panel">
+                    <div id="reimburse_toolbar" class="grid_toolbar">
+                        <div style="float: left">
+                            <a id="reimburse_btn_reload" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-reload'">Reload Data</a>
+                            <a id="reimburse_btn_add_new" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add'">Add New</a>
+                            <a id="reimburse_btn_edit" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit'">Edit Data</a>
+                            <a id="reimburse_btn_del" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-remove'">Delete</a>
+                            <a id="reimburse_btn_submit" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-search'">Submit</a>
+                            <a id="reimburse_btn_confirm" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-search'">Confirm</a>
+                            <a id="reimburse_btn_clear" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-search'">Clear</a>
+                        </div>
+                    </div>
+                    <table id="list_reimburse" class="scroll list_master" cellpadding="0" cellspacing="0"></table>
+                    <div id="pager_list_reimburse" class="scroll" style="text-align: center;"></div>
+                </div>
+            </td>
+            <td>
+                <div id="reimburse_detail_panel" class="easyui-panel">
+                    <div id="reimburse_detail_toolbar" class="grid_toolbar">
+                        <div style="float: left">
+                            <a id="reimburse_detail_btn_reload" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-reload'">Reload Data</a>
+                            <a id="reimburse_detail_btn_add_new" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-add'">Add New</a>
+                            <a id="reimburse_detail_btn_edit" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-edit'">Edit Data</a>
+                            <a id="reimburse_detail_btn_del" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-remove'">Delete</a>
+                        </div>
+                    </div>
+                    <table id="list_reimburse_detail" class="scroll list_master" cellpadding="0" cellspacing="0"></table>
+                    <div id="pager_list_reimburse_detail" class="scroll" style="text-align: center;"></div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!--  Dialog Submit Form -->
+    <div id="submitted_panel" class="easyui-dialog" data-options="modal:true" title="Submit Reimburse" style="width: 300px; height: 150px; padding: 0 10px">
+        <div class="grid_toolbar">
+            <a id="submitted_btn_save" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-search'">Save</a>
+            <a id="submitted_btn_close" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-remove'">Close</a>
+        </div>
+        <fieldset class="ui-corner-all" style="margin: 20px 0">
+            <table cellspacing="0" cellpadding="0" width="100%">
+                <tr>
+                    <td>Submit Date
+                    </td>
+                    <td>
+                        <input type="text" id="txtSubmitDate" class="easyui-datebox" size="10" />
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+    <!-- END Submit Form -->
+
+    <!--  Dialog Confirm Form -->
+    <div id="confirmed_panel" class="easyui-dialog" data-options="modal:true" title="Confirm Reimburse" style="width: 300px; height: 150px; padding: 0 10px">
+        <div class="grid_toolbar">
+            <a id="confirmed_btn_save" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-search'">Save</a>
+            <a id="confirmed_btn_close" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-remove'">Close</a>
+        </div>
+        <fieldset class="ui-corner-all" style="margin: 20px 0">
+            <table cellspacing="0" cellpadding="0" width="100%">
+                <tr>
+                    <td>Confirm Date
+                    </td>
+                    <td>
+                        <input type="text" id="txtConfirmDate" class="easyui-datebox" size="10" />
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+    <!-- END Confirm Form -->
+
+    <!--  Dialog Clear Form -->
+    <div id="cleared_panel" class="easyui-dialog" data-options="modal:true" title="Clear Reimburse" style="width: 300px; height: 150px; padding: 0 10px">
+        <div class="grid_toolbar">
+            <a id="cleared_btn_save" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-search'">Save</a>
+            <a id="cleared_btn_close" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-remove'">Close</a>
+        </div>
+        <fieldset class="ui-corner-all" style="margin: 20px 0">
+            <table cellspacing="0" cellpadding="0" width="100%">
+                <tr>
+                    <td>Clear Date
+                    </td>
+                    <td>
+                        <input type="text" id="txtClearDate" class="easyui-datebox" size="10" />
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+    <!-- END Submit Form -->
+
+    <!-- Reimburse -->
+    <div id="reimburse_pnl" class="easyui-dialog" data-options="modal:true" title="Reimburse" style="width: 600px; height: 250px; padding: 0 10px">
+        <div class="grid_toolbar">
+            <a id="reimburse_btn_save" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-search'">Save</a>
+            <a id="reimburse_btn_close" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-remove'">Close</a>
+        </div>
+        <fieldset class="ui-corner-all" style="margin: 20px 0">
+            <table cellspacing="0" cellpadding="0" width="100%">
+                <tr>
+                    <td valign="top">Description
+                    </td>
+                    <td>
+                        <textarea id="txtDescription" name="Description" rows="4" cols="45"></textarea>
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+    <!-- END Reimburse -->
+
+    <!-- Reimburse Detail -->
+    <div id="reimburse_detail_pnl" class="easyui-dialog" data-options="modal:true" title="Reimburse Detail" style="width: 650px; height: 300px; padding: 0 10px">
+        <div class="grid_toolbar">
+            <a id="reimburse_detail_btn_save" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-search'">Save</a>
+            <a id="reimburse_detail_btn_close" href="#" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-remove'">Close</a>
+        </div>
+        <fieldset class="ui-corner-all" style="margin: 20px 0">
+            <table cellspacing="0" cellpadding="0" width="100%">
+                <tr>
+                    <td valign="top">Description</td>
+                    <td colspan="3">
+                        <textarea id="txtDescReimburseDetail" name="DetailDescription"  rows="5" cols="57"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="white-space: nowrap">Amount</td>
+                    <td colspan="3">
+                        <input id="txtAmountReimburseDetail" name="DetailAmount"  type="text" size="10" style="text-align: right" class="textright easyui-numberbox" data-options="precision:2,groupSeparator:','" value="0" />
+                    </td>
+                </tr>
+                <tr>
+                    <td valign="top">Expense Date</td>
+                    <td colspan="3">
+                        <input id="txtExpenseDateReimburseDetail" type="text" class="easyui-datebox" size="10" />
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+    <!-- END Reimburse Detail -->
+
+</div>
